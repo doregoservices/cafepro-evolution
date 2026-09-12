@@ -14,11 +14,11 @@ if(!fl.includes('#/f/tok42?su='))throw new Error('formLink sans params: '+fl);
 console.log('✓ Liens auto-porteurs : '+fl);
 
 /* ===== 2. applyCfgFromUrl : téléphone vierge ===== */
-CFG={mode:'local',url:'',anon:''};LS.set('cafepro_cfg',null);
+CFG={mode:'local',url:'',anon:''};LS.set('cafeproE_cfg',null);
 location.href='https://gfeinfos-hue.github.io/fks-industrie/?su=https%3A%2F%2Fx.supabase.co&sk=eyJ123#/f/tok42';
 if(applyCfgFromUrl()!==true)throw new Error('applyCfgFromUrl devrait configurer');
 if(CFG.mode!=='supabase'||CFG.url!=='https://x.supabase.co'||CFG.anon!=='eyJ123')throw new Error('CFG mal configurée: '+JSON.stringify(CFG));
-if(JSON.parse(LS.get('cafepro_cfg')).url!=='https://x.supabase.co')throw new Error('CFG non sauvegardée');
+if(JSON.parse(LS.get('cafeproE_cfg')).url!=='https://x.supabase.co')throw new Error('CFG non sauvegardée');
 console.log('✓ Téléphone vierge + lien avec params → config Supabase appliquée et mémorisée (avant même le routage)');
 
 /* ===== 3. Ne remplace JAMAIS une config existante ===== */
@@ -73,14 +73,14 @@ console.log('✓ Couper un lien (départ) puis le réactiver : écran « désact
 global.navigator.onLine=false;
 const r8=await formSend('sales','BORIS',{date:todayISO(),agent_id:'boris',agent_name:'BORIS',lines:[{name:'Café 1kg',qty:2,price:1000}],total:2000});
 if(!r8.offline)throw new Error('formSend aurait dû passer par l outbox (hors ligne)');
-let out8=JSON.parse(LS.get('cafepro_outbox')||'[]');
+let out8=JSON.parse(LS.get('cafeproE_outbox')||'[]');
 if(out8.length!==1)throw new Error('outbox : 1 élément attendu, '+out8.length);
 const pend8a=(await DB.list('pending_entries')).filter(p=>(p.payload||{}).agent_name==='BORIS');
 if(pend8a.length)throw new Error('rien ne doit partirre tant que le réseau est coupé');
 global.navigator.onLine=true;
 const n8=await outboxFlush();
 if(n8!==1)throw new Error('outboxFlush devrait livrer 1 envoi (retour '+n8+')');
-out8=JSON.parse(LS.get('cafepro_outbox')||'[]');
+out8=JSON.parse(LS.get('cafeproE_outbox')||'[]');
 if(out8.length!==0)throw new Error('outbox devrait être vide après flush : '+out8.length);
 const pend8=(await DB.list('pending_entries')).filter(p=>(p.payload||{}).agent_name==='BORIS'&&p.status==='pending');
 if(pend8.length!==1)throw new Error('la vente de BORIS devrait être dans À valider après le retour du réseau : '+pend8.length);
@@ -94,17 +94,17 @@ if(!r9.refused)throw new Error('formSend devrait signaler le refus RLS');
 const s9=await submitSalesPoint('boris','BORIS',todayISO(),[{name:'X',qty:1,price:100}],'cash','');
 if(!s9.refused)throw new Error('submitSalesPoint devrait propager refused');
 if(!terrainPoliciesSql().includes('form_insert'))throw new Error('terrainPoliciesSql sans form_insert');
-Supa.req=_req9;DB.insert=_ins9;CFG.mode=_mode9;DB._base=_base9;LS.set('cafepro_outbox','[]');
+Supa.req=_req9;DB.insert=_ins9;CFG.mode=_mode9;DB._base=_base9;LS.set('cafeproE_outbox','[]');
 console.log('✓ Refus RLS : signalé comme « la base refuse les envois — Réglages → 🔍 Vérifier la base » (plus de faux « réseau ») ; Vérifier la base fournit toujours le SQL des politiques terrain');
 /* 10. écran terrain : bande des envois en attente + bouton Renvoyer + version affichée */
-LS.set('cafepro_outbox',JSON.stringify([{source_type:'sales',source_name:'BORIS',payload:{agent_name:'BORIS',total:20000}},{source_type:'sales',source_name:'BORIS',payload:{agent_name:'BORIS',total:1}}]));
+LS.set('cafeproE_outbox',JSON.stringify([{source_type:'sales',source_name:'BORIS',payload:{agent_name:'BORIS',total:20000}},{source_type:'sales',source_name:'BORIS',payload:{agent_name:'BORIS',total:1}}]));
 const sh10=formShell('Mes ventes','test','CONTENU');
 if(!sh10.includes('2 envois en attente'))throw new Error('bande d attente absente : '+sh10.slice(0,200));
 if(!sh10.includes('Renvoyer maintenant'))throw new Error('bouton Renvoyer absent');
 if(!sh10.includes('CaféPro '+APP_VER))throw new Error('version absente de l écran terrain');
 global.navigator.onLine=true;
 await App.formResend();
-const out10=JSON.parse(LS.get('cafepro_outbox')||'[]');
+const out10=JSON.parse(LS.get('cafeproE_outbox')||'[]');
 if(out10.length!==0)throw new Error('outbox devrait être vide après Renvoyer : '+out10.length);
 const p10=(await DB.list('pending_entries')).filter(p=>(p.payload||{}).agent_name==='BORIS');
 if(p10.length<2)throw new Error('les 2 envois BORIS devraient être livrés : '+p10.length);

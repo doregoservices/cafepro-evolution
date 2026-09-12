@@ -1,7 +1,7 @@
 {
-  "name": "FKS Industrie — Gestion usine de café",
-  "short_name": "FKS Industrie",
-  "description": "Stocks, production, ventes, caisse, paie et exploitation — FKS Industrie.",
+  "name": "E-Énergies — Suivi comptable (démo Doregoservices)",
+  "short_name": "E-Énergies",
+  "description": "Ventes, acomptes clients, achats, caisse/banque, paie, exploitation — démonstration pour E-Énergies.",
   "lang": "fr",
   "start_url": "./index.html",
   "scope": "./",

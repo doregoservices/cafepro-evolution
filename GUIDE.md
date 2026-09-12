@@ -1,5 +1,8 @@
 # ☕ CaféPro — Guide de démarrage (français)
 
+> ## ⚡ Instance de démonstration — E-Énergies
+> Ce dépôt (`cafepro-evolution`) est le **laboratoire d'évolution** de CaféPro. Il est actuellement paramétré en **démonstration pour E-Énergies** (efficacité énergétique, Cocody) : écran d'accueil « ⚡ Essayer — démonstration E-Énergies », catalogue audits/panneaux/chauffe-eau, clients B2B avec acomptes, dette fournisseur, 14 employés, fiscalité RSI (patente, AIRSI, ITS). **Les données sont isolées** de l'application de production (préfixe de stockage `cafeproE_`) : les deux applis peuvent être ouvertes dans le même navigateur sans interférer. L'application de production FKS reste sur `fks-industrie` (copie propre figée : `fks-industrie-propre`).
+
 Bienvenue ! Ce guide vous accompagne pas à pas : essai immédiat, mise en ligne, connexion Supabase, réglages, utilisation quotidienne.
 
 ---

@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#6f4e37">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>FKS Industrie — CaféPro</title>
+<title>E-Énergies — Suivi comptable (démo Doregoservices)</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-512.png">
 <style>
@@ -1001,7 +1001,7 @@ function copyTxt(txt){if(navigator.clipboard&&navigator.clipboard.writeText){nav
 function fallbackCopy(txt){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Copié !','ok');}catch(e){toast('Copiez manuellement');}ta.remove();}
 
 /* Stockage sûr : localStorage si disponible, sinon mémoire (aperçu sandbox) */
-const LS={mem:{},ok:(()=>{try{const t='__cafepro_t';localStorage.setItem(t,'1');localStorage.removeItem(t);return true;}catch(e){return false;}})(),
+const LS={mem:{},ok:(()=>{try{const t='__cafeproE_t';localStorage.setItem(t,'1');localStorage.removeItem(t);return true;}catch(e){return false;}})(),
   get(k){if(this.ok){try{return localStorage.getItem(k);}catch(e){return null;}}return this.mem[k]===undefined?null:this.mem[k];},
   set(k,v){if(this.ok){try{localStorage.setItem(k,v);return;}catch(e){if(!this._w){this._w=1;console.warn('Stockage local plein — session en mémoire uniquement (mode en ligne : vos données restent sur Supabase).');}}}this.mem[k]=String(v);},
   del(k){if(this.ok){try{localStorage.removeItem(k);return;}catch(e){}}delete this.mem[k];}};
@@ -1014,7 +1014,7 @@ function qrSvg(text,px){
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+px+' '+px+'" width="'+px+'" height="'+px+'" style="background:#fff;max-width:100%;border-radius:10px"><g fill="#2b211a">'+r+'</g></svg>';
 }
 /* ================= CONFIG / SESSION ================= */
-const CFG_KEY='cafepro_cfg',SES_KEY='cafepro_session',OUTBOX='cafepro_outbox';
+const CFG_KEY='cafeproE_cfg',SES_KEY='cafeproE_session',OUTBOX='cafeproE_outbox';
 let CFG=Object.assign({mode:'local',url:'',anon:''},JSON.parse(LS.get(CFG_KEY)||'{}'));
 let SES=null;try{SES=JSON.parse(LS.get(SES_KEY)||'null');}catch(e){SES=null;}
 let DB=null; // adaptateur actif
@@ -1022,10 +1022,10 @@ const S={user:null,route:'dashboard',tab:{},cache:{}};
 
 /* ================= ADAPTATEUR LOCAL (localStorage) ================= */
 const Local={
-  async list(t,f){try{let a=JSON.parse(LS.get('cafepro_'+t)||'[]');if(f&&f.eq)for(const k in f.eq)a=a.filter(x=>String(x[k])===String(f.eq[k]));return a;}catch(e){return[];}},
-  async insert(t,o){o=Object.assign({id:uid(),created_at:nowISO()},o);const a=await this.list(t);a.push(o);LS.set('cafepro_'+t,JSON.stringify(a));return o;},
-  async update(t,id,p){const a=await this.list(t);const i=a.findIndex(x=>x.id===id);if(i<0)return null;a[i]=Object.assign(a[i],p);LS.set('cafepro_'+t,JSON.stringify(a));return a[i];},
-  async remove(t,id){const a=await this.list(t);LS.set('cafepro_'+t,JSON.stringify(a.filter(x=>x.id!==id)));}
+  async list(t,f){try{let a=JSON.parse(LS.get('cafeproE_'+t)||'[]');if(f&&f.eq)for(const k in f.eq)a=a.filter(x=>String(x[k])===String(f.eq[k]));return a;}catch(e){return[];}},
+  async insert(t,o){o=Object.assign({id:uid(),created_at:nowISO()},o);const a=await this.list(t);a.push(o);LS.set('cafeproE_'+t,JSON.stringify(a));return o;},
+  async update(t,id,p){const a=await this.list(t);const i=a.findIndex(x=>x.id===id);if(i<0)return null;a[i]=Object.assign(a[i],p);LS.set('cafeproE_'+t,JSON.stringify(a));return a[i];},
+  async remove(t,id){const a=await this.list(t);LS.set('cafeproE_'+t,JSON.stringify(a.filter(x=>x.id!==id)));}
 };
 
 /* ================= ADAPTATEUR SUPABASE (REST) ================= */
@@ -1092,11 +1092,11 @@ function logout(){SES=null;S.user=null;LS.del(SES_KEY);LS.del(USER_KEY);go('logi
 const SETS={};
 function defaultSettings(){
   return{
-    company:{name:'FKS Industrie',logo:''},
+    company:{name:'E-Énergies',logo:''},
     admin_pin:'1234',
     sage_accounts:[
       {key:'ventes',label:'Ventes de produits finis (702)',account:'702000',group:'produits'},
-      {key:'achat_vert',label:'Achat café vert — matière première (6021)',account:'602100',group:'achats'},
+      {key:'achat_vert',label:'Achats matériel (6021)',account:'602100',group:'achats'},
       {key:'emballages',label:'Emballages perdus (6081)',account:'608100',group:'achats'},
       {key:'loyer',label:'Locations et charges locatives (622)',account:'622000',group:'services'},
       {key:'transport',label:'Transports sur ventes (612 — sur achats : 611)',account:'612000',group:'services'},
@@ -1161,7 +1161,7 @@ async function loadSettings(){const d=defaultSettings();let _ok=true;try{const r
   SETS.exploitation=Object.assign({},d.exploitation,SETS.exploitation||{});
   SETS.company=Object.assign({},d.company,SETS.company||{});
   SETS.fiscal=Object.assign({},d.fiscal,SETS.fiscal||{});
-  if(!SETS.company.name||SETS.company.name==='Usine de café')SETS.company.name='FKS Industrie';
+  if(!SETS.company.name||SETS.company.name==='Usine de café')SETS.company.name='E-Énergies';
   const storedAcc=Array.isArray(SETS.sage_accounts)?SETS.sage_accounts:[];
   SETS.sage_accounts=d.sage_accounts.map(def=>{const st=storedAcc.filter(x=>x.key===def.key)[0];
     return st?Object.assign({},def,{label:st.label||def.label,account:st.account!=null?st.account:def.account,group:st.group||def.group}):def;})
@@ -1173,7 +1173,7 @@ async function loadSettings(){const d=defaultSettings();let _ok=true;try{const r
 async function setSetting(k,v){
   if(CFG.mode==='local'){const a=await Local.list('settings');const i=a.findIndex(x=>x.key===k);
     if(i>=0)a[i].value=JSON.stringify(v);else a.push({id:uid(),key:k,value:JSON.stringify(v)});
-    LS.set('cafepro_settings',JSON.stringify(a));}
+    LS.set('cafeproE_settings',JSON.stringify(a));}
   else{await Supa.req('settings','on_conflict=key','POST',[{key:k,value:JSON.stringify(v)}],{Prefer:'resolution=merge-duplicates'});}
   SETS[k]=v;
   if(DB&&DB.bump)DB.bump();
@@ -1281,7 +1281,7 @@ async function computeStats(){
 
 /* ================= DONNÉES DE DÉMONSTRATION ================= */
 async function seedDemo(){
-  if(LS.get('cafepro_seeded'))return;
+  if(LS.get('cafeproE_seeded'))return;
   const D=n=>{const d=new Date();d.setDate(d.getDate()-n);const t=new Date();if(d.getMonth()!==t.getMonth()||d.getFullYear()!==t.getFullYear())return t.toISOString().slice(0,8)+'01';return d.toISOString().slice(0,10);};
   const PK=[{name:'Sachet 1 kg',unit:'sachet',alert_min:200},{name:'Sachet 500 g',unit:'sachet',alert_min:200},{name:'Étiquette autocollante',unit:'étiquette',alert_min:500}];
   const pkids={};for(const k of PK){const r=await Local.insert('packaging_items',Object.assign({active:true},k));pkids[k.name]=r.id;}
@@ -1323,7 +1323,76 @@ async function seedDemo(){
   await Local.insert('advances',{employee_name:'Bakary Traoré',date:D(9),amount:25000,note:'Avance urgence familiale',run_id:null});
   await Local.insert('assets',{name:'Torréfacteur industriel',category:'Matériel de production',acq_date:D(400),cost:4500000,salvage:500000,life_years:8,active:true,note:''});
   await Local.insert('assets',{name:'Groupe électrogène',category:'Matériel divers',acq_date:D(300),cost:3000000,salvage:0,life_years:10,active:true,note:''});
-  LS.set('cafepro_seeded','1');
+  LS.set('cafeproE_seeded','1');
+}
+
+async function seedDemoE(){
+  /* Démo E-Énergies (cafepro-evolution) — entreprise d\'efficacité énergétique, Cocody Riviera Bonoumin.
+     Mêmes mécanismes que la production : ventes B2B avec acomptes (ref salepay:), dettes fournisseurs (pay_method later),
+     caisse espèces/MoMo/banque isolée, paie CNPS-CMU-ITS, fiscalité du régime RSI en lignes analytiques. */
+  if(LS.get('cafeproE_seeded'))return;
+  const D=n=>{const d=new Date();d.setDate(d.getDate()-n);const t=new Date();if(d.getMonth()!==t.getMonth()||t.getFullYear()!==t.getFullYear())return t.toISOString().slice(0,8)+'01';return d.toISOString().slice(0,10);};
+  SETS.company=Object.assign({},SETS.company,{name:'E-Énergies'});
+  await setSetting('company',SETS.company);
+  await setSetting('extra_lines',[
+    {id:'xlE1',section:'taxes',period:monthISO(),label:'Patente communale (provision)',amount:150000},
+    {id:'xlE2',section:'taxes',period:monthISO(),label:'AIRSI',amount:45000},
+    {id:'xlE3',section:'taxes',period:monthISO(),label:'ITS — acompte provisionnel',amount:120000}]);
+  const P=[{name:'Audit énergétique (forfait)',price:350000,unit:'prestation'},
+    {name:'Étude & dimensionnement solaire',price:150000,unit:'prestation'},
+    {name:'Panneau solaire 550 Wc',price:95000,unit:'unité'},
+    {name:'Onduleur hybride 5 kVA',price:650000,unit:'unité'},
+    {name:'Chauffe-eau solaire 200 L',price:420000,unit:'unité'},
+    {name:'Kit domotique résidentiel',price:380000,unit:'kit'},
+    {name:'Contrat maintenance annuel',price:240000,unit:'contrat'},
+    {name:'Isolation thermique (m²)',price:12000,unit:'m²'}];
+  const pids={};for(const p of P){const r=await Local.insert('products',{name:p.name,price:p.price,weight_g:0,unit:p.unit,active:true,alert_min:0,type_name:'Prestation',type_kg:0,recipes:[],packaging:[]});pids[p.name]=r.id;}
+  const A=[{name:'Awa Koné',phone:'07 00 00 00 01'},{name:'Fatou Bamba',phone:'07 00 00 00 02'},{name:'Koffi Yao',phone:'07 00 00 00 03'}];
+  const aids={};for(const a of A){const r=await Local.insert('sales_agents',Object.assign({token:rndToken(),active:true},a));aids[a.name]=r.id;}
+  const pu1=await Local.insert('purchases',{date:D(18),supplier:'Sunlight Power CI',qty_kg:60,price_per_kg:68000,amount:4080000,pay_method:'bank',note:'Panneaux 550 Wc — distributeur agréé',paid_entry:null});
+  await Local.insert('cash_entries',{date:D(18),type:'out',account:'bank',category:'banque',label:'Achat matériel — Sunlight Power CI',amount:4080000,imputable:false,ref:'purchase:'+pu1.id,source:'admin',status:'validated'});
+  const pu2=await Local.insert('purchases',{date:D(10),supplier:'Ivoire Électric Supplies',qty_kg:400,price_per_kg:2500,amount:1000000,pay_method:'cash',note:'Câblage, gaines, connectiques',paid_entry:null});
+  await Local.insert('cash_entries',{date:D(10),type:'out',account:'cash',category:'achat_vert',label:'Achat matériel — Ivoire Électric Supplies',amount:1000000,imputable:true,ref:'purchase:'+pu2.id,source:'admin',status:'validated'});
+  await Local.insert('purchases',{date:D(6),supplier:'Techno Énergie SARL',qty_kg:8,price_per_kg:480000,amount:3840000,pay_method:'later',note:'Onduleurs hybrides — paiement à 30 jours',paid_entry:null});
+  const mkSale=async(date,agent,lines,pay_mode,client,pays)=>{const total=lines.reduce((s,l)=>s+l.qty*l.price,0);
+    const sl=await Local.insert('sales',{date,agent_id:aids[agent],agent_name:agent,pay_mode,client:client||'',total,lines,source:'form',status:'validated',credit_status:'due'});
+    if(pay_mode!=='credit'){await Local.insert('cash_entries',{date,type:'in',account:pay_mode==='momo'?'momo':'cash',category:'ventes',label:'Ventes '+agent,amount:total,imputable:true,ref:'sale:'+sl.id,source:'form',status:'validated'});await Local.update('sales',sl.id,{credit_status:'paid'});return sl;}
+    let paid=0,last=null;for(const y of (pays||[])){paid+=Number(y[1])||0;last=y[0];
+      await Local.insert('cash_entries',{date:y[0],type:'in',account:y[2]==='momo'?'momo':'bank',category:y[2]==='momo'?'ventes':'banque',label:(paid>=total?'Solde client — ':'Acompte client — ')+client,amount:y[1],imputable:y[2]==='momo',ref:'salepay:'+sl.id,source:'admin',status:'validated'});}
+    if(paid>=total)await Local.update('sales',sl.id,{credit_status:'paid',paid_date:last});
+    return sl;};
+  await mkSale(D(1),'Awa Koné',[{product_id:pids['Kit domotique résidentiel'],name:'Kit domotique résidentiel',qty:1,price:380000}],'cash','Villa privée — Riviera');
+  await mkSale(D(2),'Fatou Bamba',[{product_id:pids['Contrat maintenance annuel'],name:'Contrat maintenance annuel',qty:2,price:240000}],'momo','Sté BÂTIMENT PLUS');
+  await mkSale(D(9),'Koffi Yao',[{product_id:pids['Panneau solaire 550 Wc'],name:'Panneau solaire 550 Wc',qty:20,price:95000},{product_id:pids['Onduleur hybride 5 kVA'],name:'Onduleur hybride 5 kVA',qty:1,price:650000}],'credit','Clinique PISAM',[[D(8),1000000,'bank']]);
+  await mkSale(D(4),'Awa Koné',[{product_id:pids['Chauffe-eau solaire 200 L'],name:'Chauffe-eau solaire 200 L',qty:6,price:420000}],'credit','Résidence Les Cocotiers (syndic)',[[D(3),760000,'momo']]);
+  await mkSale(D(2),'Fatou Bamba',[{product_id:pids['Audit énergétique (forfait)'],name:'Audit énergétique (forfait)',qty:1,price:350000},{product_id:pids['Étude & dimensionnement solaire'],name:'Étude & dimensionnement solaire',qty:1,price:150000}],'credit','Groupe scolaire Les Palmiers',[]);
+  await mkSale(D(15),'Koffi Yao',[{product_id:pids['Panneau solaire 550 Wc'],name:'Panneau solaire 550 Wc',qty:12,price:95000}],'credit','SODIAM Logistique',[[D(14),500000,'bank'],[D(9),640000,'bank']]);
+  await Local.insert('cash_entries',{date:D(10),type:'out',account:'cash',category:'transport',label:'Carburant véhicules de service',amount:60000,imputable:true,source:'admin',status:'validated'});
+  await Local.insert('cash_entries',{date:D(7),type:'out',account:'momo',category:'od_transfer',label:'Envoi ventes du jour à la direction',amount:150000,imputable:false,od:'transfer',source:'admin',status:'validated'});
+  await Local.insert('cash_entries',{date:D(12),type:'in',account:'momo',category:'od_funding',label:'Approvisionnement direction',amount:400000,imputable:false,od:'funding',source:'admin',status:'validated'});
+  const E=[
+    {name:'Boris Konan',matricule:'EE-001',position:'Comptable',base_salary:350000,transport:20000,housing:0,tax_shares:2},
+    {name:'Amara Diabaté',matricule:'EE-002',position:'Ingénieur audit énergétique',base_salary:450000,transport:25000,housing:50000,tax_shares:3},
+    {name:'Serge Kouadio',matricule:'EE-003',position:'Chef de chantier',base_salary:300000,transport:20000,housing:0,tax_shares:3},
+    {name:'Mamadou Traoré',matricule:'EE-004',position:'Technicien solaire senior',base_salary:250000,transport:15000,housing:0,tax_shares:2},
+    {name:'Ibrahim Cissé',matricule:'EE-005',position:'Technicien solaire senior',base_salary:250000,transport:15000,housing:0,tax_shares:2},
+    {name:'Aïcha Touré',matricule:'EE-006',position:'Technicienne solaire',base_salary:180000,transport:10000,housing:0,tax_shares:2},
+    {name:'Franck Ehui',matricule:'EE-007',position:'Technicien solaire',base_salary:180000,transport:10000,housing:0,tax_shares:1},
+    {name:'Ali Coulibaly',matricule:'EE-008',position:'Technicien solaire',base_salary:180000,transport:10000,housing:0,tax_shares:2},
+    {name:'Rachelle Aké',matricule:'EE-009',position:'Électricienne',base_salary:200000,transport:10000,housing:0,tax_shares:2},
+    {name:'Didier Tanoh',matricule:'EE-010',position:'Électricien',base_salary:200000,transport:10000,housing:0,tax_shares:3},
+    {name:'Mariam Sylla',matricule:'EE-011',position:'Chargée d\'affaires',base_salary:220000,transport:15000,housing:0,tax_shares:2},
+    {name:'Paulin Aka',matricule:'EE-012',position:'Chargé d\'affaires',base_salary:220000,transport:15000,housing:0,tax_shares:2},
+    {name:'Ossey Biko',matricule:'EE-013',position:'Chauffeur logistique',base_salary:150000,transport:5000,housing:0,tax_shares:2},
+    {name:'Chantal Gnamien',matricule:'EE-014',position:'Assistante administrative',base_salary:160000,transport:5000,housing:0,tax_shares:2}];
+  for(const e of E)await Local.insert('employees',Object.assign({phone:'',hire_date:D(300),salary_type:'monthly',active:true},e));
+  await Local.insert('advances',{employee_name:'Aïcha Touré',date:D(9),amount:20000,note:'Avance sur salaire',run_id:null});
+  await Local.insert('advances',{employee_name:'Ossey Biko',date:D(5),amount:15000,note:'Avance carburant',run_id:null});
+  await Local.insert('assets',{name:'Fourgon utilitaire (service technique)',category:'Véhicule',acq_date:D(500),cost:12000000,salvage:2000000,life_years:7,active:true,note:''});
+  await Local.insert('assets',{name:'Outillage de pose (groupes, perceuses, échafaudages)',category:'Matériel de production',acq_date:D(450),cost:3500000,salvage:500000,life_years:5,active:true,note:''});
+  await Local.insert('assets',{name:'Analyseur réseau & caméra thermique',category:'Informatique',acq_date:D(300),cost:4800000,salvage:0,life_years:5,active:true,note:'Mesures audit énergétique'});
+  await Local.insert('assets',{name:'Parc informatique & bureautique',category:'Informatique',acq_date:D(250),cost:2500000,salvage:0,life_years:3,active:true,note:''});
+  LS.set('cafeproE_seeded','1');
 }
 
 /* ================= ROUTEUR ================= */
@@ -1361,8 +1430,8 @@ async function render(){
   const nb=$('#navPending');if(nb)nb.innerHTML=badge>0?'<span class="bdg">'+badge+'</span>':'';
 }
 async function pendingCount(){try{const a=await DB.list('pending_entries',{eq:{status:'pending'}});return a.length;}catch(e){return 0;}}
-const APP_VER='35.51';
-const NAV_ITEMS=[['dashboard','📊 Accueil'],['guide','🧭 Assistant'],['validation','📥 À valider','navPending'],['ventes','🛒 Ventes'],['commerciaux','👤 Commerciaux'],['production','🏭 Production'],['stocks','📦 Stocks'],['produits','🛍️ Produits'],['emballages','🏷️ Emballages'],['immobilisations','🏗️ Immobilisations'],['achats','🛁 Achats vert'],['caisse','💰 Caisse'],['banque','🏦 Banque'],['impayes','🧾 Impayés'],['paie','👥 Paie'],['exploitation','📈 Exploitation'],['exports','📗 Exports'],['parametres','⚙️ Réglages'],['apropos','🛟 Support']];
+const APP_VER='35.51-E1';
+const NAV_ITEMS=[['dashboard','📊 Accueil'],['guide','🧭 Assistant'],['validation','📥 À valider','navPending'],['ventes','🛒 Ventes'],['commerciaux','👤 Commerciaux'],['production','🏭 Production'],['stocks','📦 Stocks'],['produits','🛍️ Produits'],['emballages','🏷️ Emballages'],['immobilisations','🏗️ Immobilisations'],['achats','🧰 Achats matériel'],['caisse','💰 Caisse'],['banque','🏦 Banque'],['impayes','🧾 Impayés'],['paie','👥 Paie'],['exploitation','📈 Exploitation'],['exports','📗 Exports'],['parametres','⚙️ Réglages'],['apropos','🛟 Support']];
 const BTAB_IC={dashboard:['📊','Accueil'],ventes:['🛒','Ventes'],production:['🏭','Produire'],caisse:['💰','Caisse'],achats:['🛁','Achats'],commerciaux:['👤','Équipe'],impayes:['🧾','Impayés'],emballages:['🏷️','Emballages'],validation:['📥','Valider']};
 const BTAB_PRI={manager:['dashboard','ventes','production','caisse'],caissier:['dashboard','caisse','banque','impayes'],commercial:['dashboard','ventes','commerciaux','impayes'],production:['dashboard','achats','production','emballages']};
 function bottomHtml(){
@@ -1375,7 +1444,7 @@ function topHtml(){
   const items=NAV_ITEMS.filter(i=>roleAllowed(i[0]));
   const mode=CFG.mode==='supabase'?'<span class="pill">☁️ En ligne</span>':'<span class="pill">📱 Local / démo</span>';
   const logoHtml='<div class="logo" data-logo>'+(SETS.company&&SETS.company.logo?'<img src="'+SETS.company.logo+'" style="width:100%;height:100%;object-fit:contain;border-radius:9px">':'☕')+'</div>';
-  return '<div class="topwrap"><div class="top"><div class="brand">'+logoHtml+'<div>'+esc((SETS.company&&SETS.company.name)||'FKS Industrie')+'<span class="sub">Gestion de production — CaféPro</span></div></div><div class="spacer"></div>'+mode+(!navigator.onLine?'<span class="pill" style="background:var(--badbg);color:var(--bad)">📡 Hors ligne</span>':'')+(_installEvt?'<button class="btn sm ghost" onclick="App.install()">📥 Installer</button>':'')+'<div class="userchip">'+esc(S.user&&S.user.name||'')+(S.user&&S.user.role&&S.user.role!=='manager'?' <span class="pill">'+(ROLE_LBL[S.user.role]||'')+'</span>':'')+' <button class="btn sm sec" onclick="logout()">Quitter</button></div></div>'
+  return '<div class="topwrap"><div class="top"><div class="brand">'+logoHtml+'<div>'+esc((SETS.company&&SETS.company.name)||'E-Énergies')+'<span class="sub">Suivi comptable & pilotage — E-Énergies</span></div></div><div class="spacer"></div>'+mode+(!navigator.onLine?'<span class="pill" style="background:var(--badbg);color:var(--bad)">📡 Hors ligne</span>':'')+(_installEvt?'<button class="btn sm ghost" onclick="App.install()">📥 Installer</button>':'')+'<div class="userchip">'+esc(S.user&&S.user.name||'')+(S.user&&S.user.role&&S.user.role!=='manager'?' <span class="pill">'+(ROLE_LBL[S.user.role]||'')+'</span>':'')+' <button class="btn sm sec" onclick="logout()">Quitter</button></div></div>'
   +'<div class="nav">'+items.map(i=>'<a href="#/'+i[0]+'" class="'+(S.route===i[0]?'on':'')+'">'+i[1]+(i[2]?'<span id="'+i[2]+'"></span>':'')+'</a>').join('')+'</div></div>';
 }
 
@@ -1384,8 +1453,8 @@ function scLogin(){
   const sup=CFG.mode==='supabase'&&CFG.url&&CFG.anon;
   $('#app').innerHTML='<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px">'
   +'<div class="card" style="max-width:400px;width:100%">'
-  +'<div style="text-align:center;margin-bottom:16px">'+((SETS.company&&SETS.company.logo)?'<img src="'+SETS.company.logo+'" style="height:72px;max-width:220px;object-fit:contain;margin:0 auto 10px;display:block">':'<div style="width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,var(--pri),var(--acc));color:#fff;font-size:32px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px">☕</div>')+'</div>'
-  +'<div style="text-align:center;margin-bottom:16px"><h2 style="justify-content:center">'+esc((SETS.company&&SETS.company.name)||'FKS Industrie')+'</h2><div class="mut">Gestion de votre usine de café</div></div>'
+  +'<div style="text-align:center;margin-bottom:16px">'+((SETS.company&&SETS.company.logo)?'<img src="'+SETS.company.logo+'" style="height:72px;max-width:220px;object-fit:contain;margin:0 auto 10px;display:block">':'<div style="width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,var(--pri),var(--acc));color:#fff;font-size:32px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px">⚡</div>')+'</div>'
+  +'<div style="text-align:center;margin-bottom:16px"><h2 style="justify-content:center">'+esc((SETS.company&&SETS.company.name)||'E-Énergies')+'</h2><div class="mut">Efficacité énergétique & renouvelables</div></div>'
   +(sup?
     '<div class="field"><span>Adresse e-mail</span><input id="lgEmail" type="email" autocomplete="username" placeholder="vous@usine.com"></div>'
    +'<div class="field"><span>Mot de passe</span><input id="lgPass" type="password" autocomplete="current-password" onkeydown="if(event.key===\'Enter\')App.login()"></div>'
@@ -1393,7 +1462,7 @@ function scLogin(){
   :
     '<div class="field"><span>Code PIN (gestionnaire ou profil restreint)</span><input id="lgPin" type="password" inputmode="numeric" placeholder="Par défaut : 1234" onkeydown="if(event.key===\'Enter\')App.loginLocal()"></div>'
    +'<button class="btn blk" onclick="App.loginLocal()">Déverrouiller</button>'
-   +'<div class="hr"></div><button class="btn sec blk" onclick="App.demo()">☕ Essayer avec les données de démonstration</button>'
+   +'<div class="hr"></div><button class="btn sec blk" onclick="App.demo()">⚡ Essayer — démonstration E-Énergies</button>'
   )
   +'<div class="hr"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sec sm" onclick="App.cfgModal()">🔌 Connexion Supabase</button>'
   +'<span class="help" style="align-self:center">'+(sup?'Mode en ligne (Supabase)':'Mode local — données sur cet appareil')+'</span></div>'
@@ -1455,7 +1524,7 @@ App.loginLocal=async()=>{const pin=$('#lgPin').value;
   if(pin===String(SETS.admin_pin||'1234')){S.user={name:'Gestionnaire',role:'manager'};saveUser();await afterLogin();return;}
   const u=(SETS.users||[]).find(x=>x.pin&&String(x.pin)===String(pin));
   if(u){S.user={name:u.name,role:u.role||'caissier'};saveUser();await afterLogin();}else toast('Code PIN incorrect','bad');};
-App.demo=async()=>{await seedDemo();if(DB&&DB.bump)DB.bump();await loadSettings();S.user={name:'Démonstration',role:'manager'};saveUser();await afterLogin();};
+App.demo=async()=>{await seedDemoE();if(DB&&DB.bump)DB.bump();await loadSettings();S.user={name:'Démonstration',role:'manager'};saveUser();await afterLogin();};
 async function afterLogin(){await loadSettings();if(CFG.mode==='supabase'){try{await Supa.loadCols();}catch(e){}}await outboxFlush();dbCheckSilent();go('dashboard');if(location.hash==='#/dashboard')render();}
 async function dbCheckSilent(){try{
   if(CFG.mode!=='supabase'||!CFG.url||!CFG.anon)return;
@@ -1758,16 +1827,16 @@ async function scAchats(){
   const remA={};for(const p of list){remA[p.id]=await purchaseRemaining(p);}
   const unpaid=list.filter(p=>remA[p.id]>0.005);
   const dettes=unpaid.reduce((a,p)=>a+remA[p.id],0);
-  $('#main').innerHTML='<div class="card"><h2>🛁 Achats de café vert<span class="spacer"></span><button class="btn sm" onclick="App.achatForm()">+ Nouvel achat</button></h2>'
-  +'<div class="grid g4" style="margin-bottom:12px"><div class="kpi"><div class="t">Total acheté</div><div class="v">'+num2(totKg)+' kg</div></div><div class="kpi"><div class="t">Montant total</div><div class="v">'+money(totAmt)+'</div></div><div class="kpi"><div class="t">Prix moyen</div><div class="v">'+money(totKg?totAmt/totKg:0)+'/kg</div></div><div class="kpi"><div class="t">Dettes fournisseurs</div><div class="v" style="color:'+(dettes>0?'var(--bad)':'var(--ok)')+'">'+money(dettes)+'</div><div class="s">'+unpaid.length+' achat(s) non réglé(s)</div></div></div>'
+  $('#main').innerHTML='<div class="card"><h2>🧰 Achats matériel<span class="spacer"></span><button class="btn sm" onclick="App.achatForm()">+ Nouvel achat</button></h2>'
+  +'<div class="grid g4" style="margin-bottom:12px"><div class="kpi"><div class="t">Total acheté</div><div class="v">'+num2(totKg)+'</div></div><div class="kpi"><div class="t">Montant total</div><div class="v">'+money(totAmt)+'</div></div><div class="kpi"><div class="t">Prix moyen</div><div class="v">'+money(totKg?totAmt/totKg:0)+'/kg</div></div><div class="kpi"><div class="t">Dettes fournisseurs</div><div class="v" style="color:'+(dettes>0?'var(--bad)':'var(--ok)')+'">'+money(dettes)+'</div><div class="s">'+unpaid.length+' achat(s) non réglé(s)</div></div></div>'
   +(unpaid.length?'<div class="alert al-wait" style="margin-bottom:12px">🛁 <b>Dettes fournisseurs — '+money(dettes)+' F à payer</b> : '
     +unpaid.slice(0,6).map(p=>esc(p.supplier)+' ('+dFR(p.date)+') <b>'+money(remA[p.id])+'</b>'+(remA[p.id]<Number(p.amount||0)-0.005?' sur '+money(p.amount):'')+' <button class="btn sm ok" onclick="App.achatPay(\''+p.id+'\')">💸 Payer</button>').join(' · ')
     +(unpaid.length>6?' … et '+(unpaid.length-6)+' autre(s)':'')+' — écriture Sage : CA 4011 Fournisseurs / 571-5521</div>':'')
-  +'<div class="tblwrap"><table class="tbl"><thead><tr><th>Date</th><th>Fournisseur</th><th class="r">Qté (kg)</th><th class="r">Prix/kg</th><th class="r">Montant</th><th>Règlement</th><th></th></tr></thead><tbody>'
+  +'<div class="tblwrap"><table class="tbl"><thead><tr><th>Date</th><th>Fournisseur</th><th class="r">Qté</th><th class="r">Prix unitaire</th><th class="r">Montant</th><th>Règlement</th><th></th></tr></thead><tbody>'
   +list.map(p=>{const rem=remA[p.id];const paid=rem<=0.005;const part=paid&&Number(p.amount||0)>0.005;
     return '<tr><td>'+dFR(p.date)+'</td><td>'+esc(p.supplier)+'</td><td class="r">'+num2(p.qty_kg)+'</td><td class="r">'+money(p.price_per_kg)+'</td><td class="r"><b>'+money(p.amount)+'</b>'+(part?'<br><small class="mut">payé en plusieurs fois</small>':'')+'</td><td>'+(paid?'<span class="badge b-ok">Payé</span>':(rem<Number(p.amount||0)-0.005?'<span class="badge b-wait">Reste '+money(rem)+'</span>':'<span class="badge b-wait">Non payé</span>'))+'</td>'
     +'<td class="r" style="white-space:nowrap">'+(paid?'':'<button class="btn sm ok" onclick="App.achatPay(\''+p.id+'\')">💸 Payer</button> ')+'<button class="btn sm sec" onclick="App.achatEdit(\''+p.id+'\')">✎</button> <button class="btn sm sec" onclick="App.achatDel(\''+p.id+'\')">✕</button></td></tr>';}).join('')
-  +'</tbody><tfoot><tr><td colspan="2">TOTAL</td><td class="r">'+num2(totKg)+' kg</td><td></td><td class="r">'+money(totAmt)+'</td><td></td><td></td></tr></tfoot></table></div></div>';
+  +'</tbody><tfoot><tr><td colspan="2">TOTAL</td><td class="r">'+num2(totKg)+'</td><td></td><td class="r">'+money(totAmt)+'</td><td></td><td></td></tr></tfoot></table></div></div>';
 }
 App.achatPay=async id=>{const p=(await DB.list('purchases',{eq:{id:id}}))[0];if(!p)return;
   const rem=await purchaseRemaining(p);
@@ -1788,9 +1857,9 @@ App.achatPaySave=async id=>{const p=(await DB.list('purchases',{eq:{id:id}}))[0]
 App.achatDel=id=>confirmBox('Supprimer cet achat ?','Le stock de café vert sera diminué d\'autant. Cette action est définitive.','Supprimer',async()=>{await DB.remove('purchases',id);render();});
 App.achatForm=async id=>{let p=null;
   if(id)p=(await DB.list('purchases',{eq:{id:id}}))[0]||null;
-  modal(id?'Modifier l\'achat':'Nouvel achat de café vert',
+  modal(id?'Modifier l\'achat':'Nouvel achat matériel',
     '<div class="row">'+fld('Date','<input id="aD" type="date" value="'+(p?p.date:todayISO())+'">')+fld('Fournisseur','<input id="aS" value="'+(p?esc(p.supplier||''):'')+'" placeholder="ex : Coopérative de Man">')+'</div>'
-    +'<div class="row">'+fld('Quantité (kg)','<input id="aQ" type="number" step="0.1" inputmode="decimal" value="'+(p?Number(p.qty_kg)||'':'')+'">')+fld('Prix au kg (FCFA)','<input id="aP" type="number" inputmode="numeric" oninput="App.achatTot()" value="'+(p?Number(p.price_per_kg)||'':'')+'">')+'</div>'
+    +'<div class="row">'+fld('Quantité','<input id="aQ" type="number" step="0.1" inputmode="decimal" value="'+(p?Number(p.qty_kg)||'':'')+'">')+fld('Prix unitaire (FCFA)','<input id="aP" type="number" inputmode="numeric" oninput="App.achatTot()" value="'+(p?Number(p.price_per_kg)||'':'')+'">')+'</div>'
     +fld('Montant (FCFA)','<input id="aT" type="number" inputmode="numeric" oninput="$(\'#aAuto\').value=\'\'" value="'+(p?Number(p.amount)||'':'')+'">')
     +'<input type="hidden" id="aAuto" value="1">'
     +fld('Moyen de paiement','<select id="aM"><option value="cash">Espèces</option><option value="momo">Mobile Money</option><option value="bank">🏦 Banque (à part)</option><option value="later">À payer plus tard</option></select>')
@@ -1806,11 +1875,11 @@ App.achatSave=async id=>{const q=Number($('#aQ').value)||0;const t=Number($('#aT
   if(id){await DB.update('purchases',id,rec);
     const ce=(await DB.list('cash_entries')).filter(x=>x.ref==='purchase:'+id)[0];
     if(rec.pay_method==='later'){if(ce)await DB.remove('cash_entries',ce.id);}
-    else if(ce)await DB.update('cash_entries',ce.id,{date:rec.date,account:acc,amount:t,label:'Achat café vert — '+rec.supplier});
-    else await createCashEntry({date:rec.date,type:'out',account:acc,category:isBk?'banque':'achat_vert',label:'Achat café vert — '+rec.supplier,amount:t,imputable:!isBk,ref:'purchase:'+id});
+    else if(ce)await DB.update('cash_entries',ce.id,{date:rec.date,account:acc,amount:t,label:'Achat matériel — '+rec.supplier});
+    else await createCashEntry({date:rec.date,type:'out',account:acc,category:isBk?'banque':'achat_vert',label:'Achat matériel — '+rec.supplier,amount:t,imputable:!isBk,ref:'purchase:'+id});
     closeModal();toast('Achat modifié ✅','ok');render();return;}
   const p=await DB.insert('purchases',Object.assign({status:'validated'},rec));
-  if(rec.pay_method!=='later')await createCashEntry({date:p.date,type:'out',account:acc,category:isBk?'banque':'achat_vert',label:'Achat café vert — '+p.supplier,amount:t,imputable:!isBk,ref:'purchase:'+p.id});
+  if(rec.pay_method!=='later')await createCashEntry({date:p.date,type:'out',account:acc,category:isBk?'banque':'achat_vert',label:'Achat matériel — '+p.supplier,amount:t,imputable:!isBk,ref:'purchase:'+p.id});
   closeModal();toast('Achat enregistré','ok');render();};
 
 /* ================= PRODUCTION ================= */
@@ -2784,7 +2853,7 @@ App.livreGo=async()=>{
   const D=await livreData(sp.end,sp.n);
   if(!D)return toast('Aucun bulletin généré sur la période choisie — générez d abord la paie du mois (Paie du mois → Générer)','bad');
   const start=D.start,end=sp.end,n=sp.n,all=D.all,head=D.head,rows=D.rows,tot=D.tot,pr=D.pr;
-  const R=[['LIVRE DE PAIE — '+(n>1?monthLabel(start)+' → '+monthLabel(end):monthLabel(end))],[(SETS.company&&SETS.company.name)||'FKS Industrie',all.length+' bulletin(s) — montants en FCFA'],[]].concat([head]).concat(rows).concat([tot]);
+  const R=[['LIVRE DE PAIE — '+(n>1?monthLabel(start)+' → '+monthLabel(end):monthLabel(end))],[(SETS.company&&SETS.company.name)||'E-Énergies',all.length+' bulletin(s) — montants en FCFA'],[]].concat([head]).concat(rows).concat([tot]);
   const widths=(n>1?[8]:[]).concat([24,15,11,12,11,11]).concat(pr.map(()=>11)).concat([12,10,9,11,9,11,10,10,13,13]);
   download('livre-de-paie-'+(n>1?start+'_'+end:end)+'.xlsx',buildXlsx([{name:'Livre de paie',rows:R,widths:widths}]));
   closeModal();toast('Livre de paie ('+all.length+' bulletins) téléchargé 📗','ok');};
@@ -2829,7 +2898,7 @@ App.livrePrint=async()=>{
       const colN=chunk.length+2;
       pages+='<div class="lvpage'+(last?' last':'')+'">'
         +'<div style="display:flex;justify-content:space-between;align-items:center;gap:14px;border-bottom:3px double #5a4030;padding-bottom:8px;margin-bottom:14px">'
-          +'<div style="min-width:110px">'+logo+'<div style="font-weight:800;font-size:13px;color:#5a4030">'+esc(C.name||'FKS Industrie')+'</div><div style="font-size:9.5px;color:#8a7a66">Grand livre de paie</div></div>'
+          +'<div style="min-width:110px">'+logo+'<div style="font-weight:800;font-size:13px;color:#5a4030">'+esc(C.name||'E-Énergies')+'</div><div style="font-size:9.5px;color:#8a7a66">Grand livre de paie</div></div>'
           +'<div style="text-align:center"><div style="font-size:17px;font-weight:900;letter-spacing:.09em;color:#5a4030">GRAND LIVRE DE PAIE</div><div style="font-size:11.5px;color:#5a4030;font-weight:700">'+monthLabel(mk).toUpperCase()+'</div></div>'
           +'<div style="min-width:110px;text-align:right;font-size:9.5px;color:#8a7a66;line-height:1.7">Page '+pg+' / '+totPg+'<br>Généré le '+dFR(todayISO())+'<br>'+list.length+' bulletin(s)</div>'
         +'</div>'
@@ -2844,7 +2913,7 @@ App.livrePrint=async()=>{
             +chunk.map(e=>{const v=r[1](e);return '<td class="r lvnum">'+(num?money(v):esc(String(v)))+'</td>';}).join('')
             +'<td class="r lvtotc">'+(num?money(list.reduce((a,e)=>a+Number(r[1](e)||0),0)):'—')+'</td></tr>';}).join('')).join('')
         +'</tbody></table>'
-        +'<div style="display:flex;justify-content:space-between;font-size:9.5px;color:#8a7a66;border-top:1px solid #e5dbc9;margin-top:10px;padding-top:6px"><span>'+esc(C.name||'FKS Industrie')+' · '+monthLabel(mk)+' · montants en FCFA</span><span>Réalisé par Doregoservices · 07 17 57 95 56</span></div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:9.5px;color:#8a7a66;border-top:1px solid #e5dbc9;margin-top:10px;padding-top:6px"><span>'+esc(C.name||'E-Énergies')+' · '+monthLabel(mk)+' · montants en FCFA</span><span>Réalisé par Doregoservices · 07 17 57 95 56</span></div>'
         +(last?totBlock:'')
         +'</div>';}
   });
@@ -2978,7 +3047,7 @@ async function slipHtml(s){
   /* — en-tête — */
   +'<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding-bottom:12px;border-bottom:3px double #5a4030">'
   +'<div>'+logo+'</div>'
-  +'<div style="flex:1;text-align:center"><div style="font-size:21px;font-weight:900;letter-spacing:.06em;color:#5a4030">BULLETIN DE PAIE</div><div style="font-size:13px;margin-top:2px">'+esc(C.name||'FKS Industrie')+'</div></div>'
+  +'<div style="flex:1;text-align:center"><div style="font-size:21px;font-weight:900;letter-spacing:.06em;color:#5a4030">BULLETIN DE PAIE</div><div style="font-size:13px;margin-top:2px">'+esc(C.name||'E-Énergies')+'</div></div>'
   +'<div style="background:#5a4030;color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;white-space:nowrap">'+monthLabel(s.run_period)+'</div></div>'
   /* — identité salarié — */
   +'<div style="display:flex;gap:8px;margin:12px 0;flex-wrap:wrap">'
@@ -3304,7 +3373,7 @@ App.expCaisse=async()=>{
   /* --- achats non encore réglés → AC crédit fournisseurs --- */
   pur.filter(p=>inR(p.date)).forEach(p=>{
     const tf=tiersOf('fournisseur',p.supplier);
-    const lib='Achat café vert — '+(tf.n||'fournisseur divers');
+    const lib='Achat matériel — '+(tf.n||'fournisseur divers');
     push('AC',p.date,sagAcc('achat_vert')||'',lib,Number(p.amount)||0,'');
     push('AC',p.date,tf.a,lib,'',Number(p.amount)||0);
   });
@@ -3559,7 +3628,7 @@ App.saveFiscal=async()=>{const m=$('#fiMode').value||'';if(!m)return toast('Choi
   const rec={mode:m,tva:$('#fiTva').value==='1',tva_rate:Number($('#fiTvaR').value)||18,nif:$('#fiNif').value||''};
   if(m==='TEE'){rec.tee=rate;rec.bic=prev.bic!=null?prev.bic:25;}else{rec.bic=rate;rec.tee=prev.tee!=null?prev.tee:5;}
   await setSetting('fiscal',rec);toast('Fiscalité enregistrée ✅ — '+(m==='TEE'?'TEE '+rate+' % du chiffre d\'affaires':'BIC '+rate+' % du résultat'),'ok');render();};
-App.setCo=async()=>{await setSetting('company',{name:$('#stCo').value||'FKS Industrie',logo:(SETS.company||{}).logo||''});const jrn={};['VE','AC','CA','BQ','PA','OD'].forEach(k=>{jrn[k]=($('#jrn_'+k)?$('#jrn_'+k).value:k)||k;});await setSetting('journals',jrn);toast('Enregistré','ok');render();};
+App.setCo=async()=>{await setSetting('company',{name:$('#stCo').value||'E-Énergies',logo:(SETS.company||{}).logo||''});const jrn={};['VE','AC','CA','BQ','PA','OD'].forEach(k=>{jrn[k]=($('#jrn_'+k)?$('#jrn_'+k).value:k)||k;});await setSetting('journals',jrn);toast('Enregistré','ok');render();};
 App.logoSave=async()=>{const f=$('#stLogo').files&&$('#stLogo').files[0];if(!f)return toast('Choisissez d’abord une image','bad');
   const shrink=dUrl=>new Promise(res=>{try{const img=new Image();img.onload=()=>{try{const sc=Math.min(1,256/Math.max(1,img.height||256));
     const c=document.createElement('canvas');c.width=Math.max(1,Math.round((img.width||256)*sc));c.height=Math.max(1,Math.round((img.height||256)*sc));
@@ -3569,10 +3638,10 @@ App.logoSave=async()=>{const f=$('#stLogo').files&&$('#stLogo').files[0];if(!f)r
   if(!/^data:image\/(png|jpe?g);base64,/.test(dataUrl||''))return toast('Format non supporté — utilisez PNG ou JPG','bad');
   if(f.size>300000||dataUrl.length>420000)dataUrl=await shrink(dataUrl);
   if(dataUrl.length>420000)return toast('Image trop lourde même après réduction — essayez un logo plus simple','bad');
-  await setSetting('company',{name:(SETS.company||{}).name||'FKS Industrie',logo:dataUrl});
+  await setSetting('company',{name:(SETS.company||{}).name||'E-Énergies',logo:dataUrl});
   toast('Logo enregistré ✅ (visible dans l’app, les emails et les exports Excel)','ok');render();};
 
-App.logoDel=async()=>{await setSetting('company',{name:(SETS.company||{}).name||'FKS Industrie',logo:''});toast('Logo retiré','ok');render();};
+App.logoDel=async()=>{await setSetting('company',{name:(SETS.company||{}).name||'E-Énergies',logo:''});toast('Logo retiré','ok');render();};
 App.saveAccs=async()=>{const list=(SETS.sage_accounts||[]).slice();
   $$('#stAcc input').forEach(i=>{const k=i.getAttribute('data-k');const a=list.filter(x=>x.key===k)[0];if(a)a.account=i.value.trim();});
   $$('#stAcc select').forEach(sl=>{const k=sl.getAttribute('data-g');const a=list.filter(x=>x.key===k)[0];if(a)a.group=sl.value||a.group;});
@@ -3662,9 +3731,9 @@ App.dbWipe=()=>confirmBox('Vider toute la base en ligne ?','TOUTES les données 
   }
   toast('Base vidée ✅ — vous repartez de zéro (réglages conservés)','ok');render();});
 App.resetAll=()=>confirmBox('Tout réinitialiser ?','Toutes les données locales (démo ou saisies hors-ligne) seront effacées. La connexion Supabase, votre session et la file d\'envoi hors-ligne sont conservées. Les données Supabase ne sont pas touchées.','Réinitialiser',()=>{
-  const KEEP=['cafepro_cfg','cafepro_session','cafepro_outbox'];
-  const DATA_KEYS=['cafepro_settings','cafepro_seeded'].concat(['products','coffee_types','packaging_items','packaging_entries','purchases','roastings','transformations','productions','adjustments','assets','sales_agents','sales','cash_entries','employees','advances','pay_runs','pay_slips','pending_entries','form_tokens','email_log','supabase_cache','local_cache'].map(t=>'cafepro_'+t));
-  const wipe=k=>k.indexOf('cafepro_')===0&&KEEP.indexOf(k)<0;
+  const KEEP=['cafeproE_cfg','cafeproE_session','cafeproE_outbox'];
+  const DATA_KEYS=['cafeproE_settings','cafeproE_seeded'].concat(['products','coffee_types','packaging_items','packaging_entries','purchases','roastings','transformations','productions','adjustments','assets','sales_agents','sales','cash_entries','employees','advances','pay_runs','pay_slips','pending_entries','form_tokens','email_log','supabase_cache','local_cache'].map(t=>'cafeproE_'+t));
+  const wipe=k=>k.indexOf('cafeproE_')===0&&KEEP.indexOf(k)<0;
   if(LS.ok){try{Object.keys(localStorage).filter(wipe).forEach(k=>localStorage.removeItem(k));}catch(e){}}
   DATA_KEYS.forEach(k=>{if(KEEP.indexOf(k)<0){try{localStorage.removeItem(k);}catch(e){}}});
   Object.keys(LS.mem).filter(wipe).forEach(k=>delete LS.mem[k]);
@@ -3964,10 +4033,10 @@ async function emailSend(subject,html,attachment){
   throw new Error(msg||('Erreur '+r.status));
 }
 App.saveEmail=async()=>{const t=parseEmailTime(($('#emT')||{}).value);if(t===null)return toast('Heure invalide — écrivez par exemple 13h30, 9h15 ou 22h00','bad');await setSetting('email',{boss:$('#emB').value.trim(),key:$('#emK').value.trim(),time:t,auto_daily:false});toast('Réglages enregistrés — point programmé à '+emailTimeStr(),'ok');try{const logs=await DB.list('email_log');if(logs.some(l=>l.kind==='daily'&&l.ref===todayISO()&&(l.status==='sent'||l.status==='update_pending')))toast('ℹ️ Le point d\'aujourd\'hui a déjà été envoyé — le prochain partira demain à '+emailTimeStr());}catch(e){}App.dailyTick().catch(()=>{});};
-App.emailTest=async()=>{try{toast('Envoi en cours…');await emailSend(((SETS.company||{}).name||'FKS Industrie')+' — email de test','<p>✅ Si vous lisez cet email, l\'envoi automatique fonctionne.</p>');toast('Email de test envoyé ✅','ok');}catch(e){toast(e.message,'bad');}};
+App.emailTest=async()=>{try{toast('Envoi en cours…');await emailSend(((SETS.company||{}).name||'E-Énergies')+' — email de test','<p>✅ Si vous lisez cet email, l\'envoi automatique fonctionne.</p>');toast('Email de test envoyé ✅','ok');}catch(e){toast(e.message,'bad');}};
 const EMAILCSS='body{font-family:Arial,sans-serif;color:#2b211a}table{border-collapse:collapse;width:100%;margin:8px 0}th,td{border:1px solid #ddd;padding:6px 8px;font-size:13px;text-align:left}th{background:#6f4e37;color:#fff}.tot{font-weight:bold;background:#f4ece2}.ok{color:#1d7a4f;font-weight:bold}.bad{color:#c0392b;font-weight:bold}h2{color:#6f4e37}';
 function emailShell(title,body){const lg=(SETS.company||{}).logo;
-  return '<html><head><meta charset="utf-8"><style>'+EMAILCSS+'</style></head><body>'+(lg?'<p style="text-align:center;margin:0 0 6px"><img src="'+lg+'" style="height:52px;object-fit:contain"></p>':'')+'<h2>'+(lg?'':'☕ ')+esc((SETS.company||{}).name||'FKS Industrie')+'</h2>'+body+'<p style="color:#999;font-size:11px">Généré automatiquement — '+esc((SETS.company||{}).name||'FKS Industrie')+' · Réalisé par Doregoservices · 07 17 57 95 56</p></body></html>';}
+  return '<html><head><meta charset="utf-8"><style>'+EMAILCSS+'</style></head><body>'+(lg?'<p style="text-align:center;margin:0 0 6px"><img src="'+lg+'" style="height:52px;object-fit:contain"></p>':'')+'<h2>'+(lg?'':'☕ ')+esc((SETS.company||{}).name||'E-Énergies')+'</h2>'+body+'<p style="color:#999;font-size:11px">Généré automatiquement — '+esc((SETS.company||{}).name||'E-Énergies')+' · Réalisé par Doregoservices · 07 17 57 95 56</p></body></html>';}
 async function buildDailyReport(D){
   const sales=(await DB.list('sales')).filter(s=>s.date===D);
   const cashAll=(await DB.list('cash_entries')).filter(e=>e.date===D);
@@ -4666,7 +4735,7 @@ App.assetSave=async id=>{const rec={name:$('#asN').value.trim(),category:$('#asC
   closeModal();toast('Immobilisation enregistrée','ok');render();};
 
 /* ==== persistance du rôle (v35.43) : le rôle survit au rechargement de la page ==== */
-const USER_KEY='cafepro_user_v1';
+const USER_KEY='cafeproE_user_v1';
 function saveUser(){try{if(S.user)LS.set(USER_KEY,JSON.stringify(S.user));}catch(e){}}
 function resolveUser(email){email=String(email||'').toLowerCase();
   /* v35.48 : quand la liste des comptes est chargée (en ligne), elle est la SEULE source de vérité —

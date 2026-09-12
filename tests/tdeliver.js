@@ -5,23 +5,23 @@ await seedDemo();
 S.user={name:'Direction GFE',role:'manager',email:'direction@gfe.ci'};
 
 /* ===== 1. RÉINITIALISATION : conserve connexion, session, file hors-ligne ===== */
-LS.set('cafepro_cfg',JSON.stringify({mode:'supabase',url:'https://fake.supabase.co',anon:'k'}));
-LS.set('cafepro_session','{"access_token":"t"}');
-LS.set('cafepro_outbox','[{"source_type":"sales"}]');
-if(!JSON.parse(LS.get('cafepro_products')||'[]').length)throw new Error('pré-requis: données locales présentes');
+LS.set('cafeproE_cfg',JSON.stringify({mode:'supabase',url:'https://fake.supabase.co',anon:'k'}));
+LS.set('cafeproE_session','{"access_token":"t"}');
+LS.set('cafeproE_outbox','[{"source_type":"sales"}]');
+if(!JSON.parse(LS.get('cafeproE_products')||'[]').length)throw new Error('pré-requis: données locales présentes');
 let fn=null;const _cb=confirmBox;confirmBox=(t,m,l,f)=>{fn=f;};
 App.resetAll();
 if(!fn)throw new Error('confirmBox non appelé');
 fn();confirmBox=_cb;
-if(LS.get('cafepro_cfg')===null||!JSON.parse(LS.get('cafepro_cfg')).url)throw new Error('config Supabase perdue !');
-if(LS.get('cafepro_session')===null)throw new Error('session perdue');
-if(LS.get('cafepro_outbox')===null)throw new Error('file hors-ligne perdue');
-if(LS.get('cafepro_products')!==null)throw new Error('données locales non effacées');
+if(LS.get('cafeproE_cfg')===null||!JSON.parse(LS.get('cafeproE_cfg')).url)throw new Error('config Supabase perdue !');
+if(LS.get('cafeproE_session')===null)throw new Error('session perdue');
+if(LS.get('cafeproE_outbox')===null)throw new Error('file hors-ligne perdue');
+if(LS.get('cafeproE_products')!==null)throw new Error('données locales non effacées');
 console.log('✓ Réinitialisation : données locales effacées, mais connexion Supabase + session + file hors-ligne conservées');
 
 /* ===== 2. ÉCRAN RÉGLAGES COMPLET ===== */
-LS.set('cafepro_cfg',JSON.stringify({mode:'supabase',url:'https://fake.supabase.co',anon:'k'}));
-CFG=Object.assign({mode:'local',url:'',anon:''},JSON.parse(LS.get('cafepro_cfg')||'{}'));
+LS.set('cafeproE_cfg',JSON.stringify({mode:'supabase',url:'https://fake.supabase.co',anon:'k'}));
+CFG=Object.assign({mode:'local',url:'',anon:''},JSON.parse(LS.get('cafeproE_cfg')||'{}'));
 S.route='parametres';location.hash='#/parametres';await render();
 const set=$('#main').innerHTML;
 ['Société','Accès','Comptes à accès restreint','Correspondance des comptes','Taux de paie','Zone sensible','rapports au boss','Supabase'].forEach(x=>{
